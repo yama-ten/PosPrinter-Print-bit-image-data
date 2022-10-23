@@ -137,11 +137,14 @@ namespace OPosBitImgPrt
 // ---
 		
 		/// <summary> プリンタ送信用文字変換 Nibble フォーマット
+		/// 文字コード13が入るとプリンタがバグるので12に入れ替える。
+		/// その結果印字が多少短くなることもあるけど諦める。
 		/// </summary>
 		/// <param name="c"></param>
 		/// <returns></returns>
 		string cvt_Int2Nible(int c)
 		{
+			if (c==13) c=12;	// 13が入るとおかしくなるので12に入れ替える。
 			return new string((char)((int)'0'+(c/16)),1)
 				 + new string((char)((int)'0'+(c%16)),1);
 		}
@@ -166,8 +169,10 @@ namespace OPosBitImgPrt
 			//string dbg_text= "";
 
 			for (int i=0; i<hp; i++) {
-				int c = header[i];
-				data += cvt_Int2Nible(c);
+				data += cvt_Int2Nible(header[i]);
+
+				//int c = header[i];
+				//data += cvt_Int2Nible(c);
 				//dbg_text += $"{c:x02} "; // -- debug text	
 			}
  
@@ -177,9 +182,10 @@ namespace OPosBitImgPrt
 			}
  
 			for (int i=0; i<size; i++) {
-				int c = bit_img[i];
-				if (c==13) c=12;	// 13が入るとおかしくなる。
-				data += cvt_Int2Nible(c);
+				data += cvt_Int2Nible(bit_img[i]);
+
+				//int c = bit_img[i];
+				//data += cvt_Int2Nible(c);
 				//dbg_text += $"{c:x02} "; // -- debug text	
 			}
  
