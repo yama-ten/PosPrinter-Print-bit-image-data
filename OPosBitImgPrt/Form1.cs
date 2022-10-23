@@ -61,8 +61,7 @@ namespace OPosBitImgPrt
 {
 	public partial class Form1 : Form
 	{
-		/// <summary>
-		/// 
+		/// <summary> コンストラクタ
 		/// </summary>
 		public Form1()
 		{
@@ -82,8 +81,7 @@ namespace OPosBitImgPrt
 //		public OposPOSPrinter_CCO.OPOSPOSPrinterClass PosPrt;
 		public OposPOSPrinter_CCO.OPOSPOSPrinter PosPrt;
 
-		/// <summary>
-		/// 
+		/// <summary> ボタンの ON/OFF
 		/// </summary>
 		/// <param name="sw"></param>
 		void buttons_enable(bool sw) {
@@ -96,8 +94,7 @@ namespace OPosBitImgPrt
 			btn_close.Enabled = sw;
 		}
 
-		/// <summary>
-		/// 
+		/// <summary> [OPEN] ボタン 
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -134,8 +131,7 @@ namespace OPosBitImgPrt
 			}
 		}
 
-		/// <summary>
-		/// 
+		/// <summary> [CLOSE] ボタン
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -153,8 +149,7 @@ namespace OPosBitImgPrt
 			}
 		}
 
-		/// <summary>
-		/// 
+		/// <summary> [Print Hellow]ボタン
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -400,8 +395,7 @@ namespace OPosBitImgPrt
 		}
 
 
-		/// <summary>
-		/// 
+		/// <summary> [Print Cut] ボタン
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -410,8 +404,7 @@ namespace OPosBitImgPrt
 			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\x1dVA\x01");
 		}
 
-		/// <summary>
-		/// 
+		/// <summary> [Print Feed] ボタン
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -421,8 +414,7 @@ namespace OPosBitImgPrt
 			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\x1b"+"3"+new string(n,1) + "\n");// + "\x1b"+"2");
 		}
 
-		/// <summary>
-		/// 
+		/// <summary> [Print Text] ボタン
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
