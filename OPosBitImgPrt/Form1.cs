@@ -1,6 +1,7 @@
 ﻿/**
  * title: TM-T88シリーズにテキストをドットイメージで印刷させる。
  * file: C:\Users\tenshi\source\repos\.テスト\OPosBitImgPrt\OPosBitImgPrt\Form1.cs
+ * version: 1.0
  * date: 2022.10.23
  * 
  * auth: Tenshi
@@ -171,28 +172,28 @@ namespace OPosBitImgPrt
 		// ---
 		
 		/// <summary> プリンタ送信用文字変換 Nibble フォーマット
+		/// </summary>
+		/// <param name="c">変換する文字</param>
+		/// <returns>変換後の2文字分の配列</returns>
+		/// <remarks>
 		/// 文字コード13が入るとプリンタがバグるので12に入れ替える。
 		/// その結果印字が多少短くなることもあるけど諦める。
-		/// </summary>
-		/// <param name="c"></param>
-		/// <returns></returns>
+		/// </remarks>
 		char[] cvt_Int2Nible(int c)
 		{
 			if (c==13) c=12;	// 13が入るとおかしくなるので12に入れ替える。
-			//return new string((char)((int)'0'+(c/16)),1)
-			//	 + new string((char)((int)'0'+(c%16)),1);
 			char[] res = new char[2];
 			res[0] = (char)((int)'0'+(c/16));
 			res[1] = (char)((int)'0'+(c%16));
 			return res;
 		}
 
-		/// <summary> ビットイメージをプリントするためのデータを変換
+		/// <summary> ビットイメージをプリントするためのデータを準備
 		/// </summary>
-		/// <param name="mode">image-mode 0:8single,1:8double, 32:24single,33:24:double</param>
-		/// <param name="width"></param>
-		/// <param name="bit_img"></param>
-		/// <returns></returns>
+		/// <param name="mode">0:8dot single,1:8dot double, 32:24dot single,33:24dot double</param>
+		/// <param name="width">印字長さ</param>
+		/// <param name="bit_img">印刷データ</param>
+		/// <returns>プリント用のビットイメージコマンド</returns>
 		string cvt_bit_image(int mode, int width, byte[] bit_img)
 		{
 			byte[] header = new byte[5];
@@ -203,13 +204,10 @@ namespace OPosBitImgPrt
 			header[hp++] = (byte)(width%256);	// size-low
 			header[hp++] = (byte)(width/256);	// size-hight
  
-			//string data= "";
-			//string dbg_text= "";System.Text.StringBuilder sb =
 
             StringBuilder sb = new StringBuilder(16+width*2);
 
 			for (int i=0; i<hp; i++) {
-				//data += cvt_Int2Nible(header[i]);
 				sb.Append(cvt_Int2Nible(header[i]));
 			}
  
@@ -219,12 +217,8 @@ namespace OPosBitImgPrt
 			}
  
 			for (int i=0; i<size; i++) {
-				//data += cvt_Int2Nible(bit_img[i]);
 				sb.Append(cvt_Int2Nible(bit_img[i]));
 			}
-
-			//data = sb.ToString();
-			//return data;
 			
 			return sb.ToString();
 		}
@@ -233,8 +227,8 @@ namespace OPosBitImgPrt
 		/// <summary> ビットイメージを印刷する
 		/// </summary>
 		/// <param name="mode">image-mode 0:8single,1:8double, 32:24single,33:24:double</param>
-		/// <param name="width"></param>
-		/// <param name="bit_img"></param>
+		/// <param name="width">ビットマップの長さ</param>
+		/// <param name="bit_img">印刷するビットマップ</param>
 		/// <returns></returns>
 		int prt_bit_image(int mode, int width, byte[] bit_img)
 		{
@@ -256,22 +250,25 @@ namespace OPosBitImgPrt
 
 		/// <summary> 文字列をビットマップに変換する
 		/// </summary>
-		/// <param name="text"></param>
-		/// <param name="font_size"></param>
-		/// <param name="bmp_size"></param>
-		/// <returns></returns>
+		/// <param name="text">印刷する文字列</param>
+		/// <param name="font_size">フォトの大きさ</param>
+		/// <param name="bmp">文字列のビットマップイメージ</param>
+		/// <returns>生成されたビットマップの長さ</returns>
 		int cvt_text2bmp(string text, int font_size, ref Bitmap bmp)
 		{
 			bmp = new Bitmap(MAX_BITMAP_WIDTH, MAX_BITMAP_HEIGHT);
 			Graphics grp = Graphics.FromImage(bmp);
 			Font fnt = new Font("ＭＳ ゴシック", font_size, GraphicsUnit.Pixel);
 			
+			//文字列を描画するときの大きさを計測する
 			StringFormat sf = new StringFormat();							
-			SizeF bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);		//文字列を描画するときの大きさを計測する
+			SizeF bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);		
 			bmp_size = new SizeF((int)Math.Ceiling(bmp_size.Width), MAX_BITMAP_HEIGHT); 
 			RectangleF rct = new RectangleF(0, 0, (int)bmp_size.Width, MAX_BITMAP_HEIGHT);
-			
+
+			// 文字列のビットマップ描画
 			grp.DrawString(text, fnt, Brushes.Black, rct);
+
 			fnt.Dispose();
 			grp.Dispose();
 
@@ -282,9 +279,9 @@ namespace OPosBitImgPrt
 
 		/// <summary> ビットマップをプリンタ送信用データに変換する（24ドット倍密を想定）
 		/// </summary>
-		/// <param name="bmp"></param>
-		/// <param name="width"></param>
-		/// <returns></returns>
+		/// <param name="bmp">元になるビットマップ</param>
+		/// <param name="width">ビットマップの長さ</param>
+		/// <returns>プリンタ用に並べ替えたデータ</returns>
 		byte[] cvt_bmp2img(Bitmap bmp, int width)
 		{
 			// ドットがないところの Color値
@@ -314,10 +311,10 @@ namespace OPosBitImgPrt
 
 		/// <summary>文字列をプリンタのビットイメージに変換する
 		/// </summary>
-		/// <param name="text"></param>
-		/// <param name="font_size"></param>
-		/// <param name="img"></param>
-		/// <returns></returns>
+		/// <param name="text">元になる文字列</param>
+		/// <param name="font_size">文字の大きさ</param>
+		/// <param name="img">変換結果のbyte配列</param>
+		/// <returns>イメージの長さ</returns>
 		int cvt_text2img(string text, int font_size, ref byte[] img)
 		{
 			SizeF bmp_size = new SizeF(0,0);
