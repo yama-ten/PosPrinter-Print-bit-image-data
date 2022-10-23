@@ -234,8 +234,9 @@ namespace OPosBitImgPrt
 		}
 
 		// ---
-		//		//using System.Drawing;
-		////using System.Windows.Forms;
+
+		//using System.Drawing;
+		//using System.Windows.Forms;
 
 		////描画先とするImageオブジェクトを作成する
 		//Bitmap canvas = new Bitmap(PictureBox1.Width, PictureBox1.Height);
@@ -264,19 +265,49 @@ namespace OPosBitImgPrt
 		//PictureBox1.Image = canvas;
 
 
-		private void btn_bmpText_Click(object sender, EventArgs e)
+		const int MAX_BITMAP_WIDTH = 256;
+
+		Bitmap cvt_text2bmp(string text, ref SizeF bmp_size)
 		{
-			string text = textBox1.Text;
-			Bitmap bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+			Bitmap bmp = new Bitmap(MAX_BITMAP_WIDTH, 24); // pictureBox1.Width, pictureBox1.Height);// ,PixelFormat.Format1bppIndexed);
 			Graphics grp = Graphics.FromImage(bmp);
-			Font fnt = new Font("ＭＳ ゴシック", 12);
-			RectangleF rct = new RectangleF(0, 0, 256, 24);
-
+			Font fnt = new Font("ＭＳ ゴシック", 12, GraphicsUnit.Pixel);
+			
+			StringFormat sf = new StringFormat();							//StringFormatオブジェクトの作成
+			bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);	//幅の最大値MAX_BITMAP_WIDTHで、文字列を描画するときの大きさを計測する
+			RectangleF rct = new RectangleF(0, 0, (int)bmp_size.Width, 24);
+			
 			grp.DrawString(text, fnt, Brushes.Black, rct);
-			pictureBox1.Image = bmp;
-
 			fnt.Dispose();
 			grp.Dispose();
+
+			return bmp;
+		}
+
+		private void btn_bmpText_Click(object sender, EventArgs e)
+		{
+			SizeF bmp_size = new SizeF(0,0);
+			Bitmap bmp = cvt_text2bmp(textBox1.Text, ref bmp_size);
+			pictureBox1.Image = bmp;
+
+			int width = (int)bmp_size.Width;
+			byte[] img = new byte[width*3];
+			int p = 0;
+			for (int x=0; x<width; x++) {
+				for (int y=0; y<24; y+=8) {
+					img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() > 0 ? 0x80 : 0)
+									 | (bmp.GetPixel(x,y+1).ToArgb() > 0 ? 0x40 : 0)
+									 | (bmp.GetPixel(x,y+2).ToArgb() > 0 ? 0x20 : 0)
+									 | (bmp.GetPixel(x,y+3).ToArgb() > 0 ? 0x10 : 0)
+									 | (bmp.GetPixel(x,y+4).ToArgb() > 0 ? 0x08 : 0)
+									 | (bmp.GetPixel(x,y+5).ToArgb() > 0 ? 0x04 : 0)
+									 | (bmp.GetPixel(x,y+6).ToArgb() > 0 ? 0x02 : 0)
+									 | (bmp.GetPixel(x,y+7).ToArgb() > 0 ? 0x01 : 0)
+									 );
+				}
+			}
+
+			prt_bit_image(32, width, img);
 		}
 	}
 }
