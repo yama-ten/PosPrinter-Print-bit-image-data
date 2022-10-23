@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,40 +16,40 @@ using OposPOSPrinter_CCO;
 //{
 //	public enum ErrorCode
 //	{
-//		Success = 0,
-//		Closed = 101,
-//		Claimed = 102,
-//		NotClaimed = 103,
-//		NoService = 104,
-//		Disabled = 105,
-//		Illegal = 106,
-//		NoHardware = 107,
-//		Offline = 108,
-//		NoExist = 109,
-//		Exists = 110,
-//		Failure = 111,
-//		Timeout = 112,
-//		Busy = 113,
-//		Extended = 114,
-//		Deprecated = 115
+//		Success		= 0,
+//		Closed		= 101,
+//		Claimed		= 102,
+//		NotClaimed	= 103,
+//		NoService	= 104,
+//		Disabled	= 105,
+//		Illegal		= 106,
+//		NoHardware	= 107,
+//		Offline		= 108,
+//		NoExist		= 109,
+//		Exists		= 110,
+//		Failure		= 111,
+//		Timeout		= 112,
+//		Busy		= 113,
+//		Extended	= 114,
+//		Deprecated	= 115
 //	}
-
+//
 //  public enum PrinterStation
 //  {
-//  	None = 0,		// The current printer station is undefined.
+//  	None	= 0,	// The current printer station is undefined.
 //  	Journal = 1,	// The current printer station is Journal.
 //  	Receipt = 2,	// The current printer station is Receipt.
-//  	Slip = 4,		// The current printer station is Slip.
+//  	Slip	= 4,	// The current printer station is Slip.
 //  	TwoReceiptJournal = 32771,	// The current printer station combines Receipt and Journal.
-//  	TwoSlipJournal = 32773,		// The current printer station combines Slip and Journal.
-//  	TwoSlipReceipt = 32774		// The current printer station combines Receipt and Slip.
+//  	TwoSlipJournal	  = 32773,	// The current printer station combines Slip and Journal.
+//  	TwoSlipReceipt	  = 32774	// The current printer station combines Receipt and Slip.
 //  }
 //
 //	public enum BinaryConversion
 //	{
-//		None = 0,	// Data is placed one byte per character, with no conversion. This is the default.
-//		Nibble = 1,	// Each byte is converted into two characters. This option provides for the fastest conversion between binary and ASCII characters.
-//		Decimal = 2	// Each byte is converted into three characters. This option provides for the easiest conversion between binary and ASCII characters for Visual Basic and similar languages.
+//		None	= 0,	// Data is placed one byte per character, with no conversion. This is the default.
+//		Nibble	= 1,	// Each byte is converted into two characters. This option provides for the fastest conversion between binary and ASCII characters.
+//		Decimal = 2		// Each byte is converted into three characters. This option provides for the easiest conversion between binary and ASCII characters for Visual Basic and similar languages.
 //	}
 //}
 
@@ -143,15 +144,25 @@ namespace OPosBitImgPrt
 
 // ---
 		
+		/// <summary> プリンタ送信用文字変換 Nibble フォーマット
+		/// </summary>
+		/// <param name="c"></param>
+		/// <returns></returns>
 		string cvt_Int2Nible(int c)
 		{
 			return new string((char)((int)'0'+(c/16)),1)
 				 + new string((char)((int)'0'+(c%16)),1);
 		}
 
+		/// <summary> ビットイメージをプリントするためのデータを変換
+		/// </summary>
+		/// <param name="mode">image-mode 0:8single,1:8double, 32:24single,33:24:double</param>
+		/// <param name="width"></param>
+		/// <param name="bit_img"></param>
+		/// <returns></returns>
 		string cvt_bit_image(int mode, int width, byte[] bit_img)
 		{
-			byte[] header = new byte[16];
+			byte[] header = new byte[5];
 			int hp = 0;
 			header[hp++] = (byte)'\x1b';
 			header[hp++] = (byte)'\x2a';
@@ -160,15 +171,12 @@ namespace OPosBitImgPrt
 			header[hp++] = (byte)(width/256);	// size-hight
  
 			string data= "";
-			string dbg_text= "";
+			//string dbg_text= "";
 
 			for (int i=0; i<hp; i++) {
 				int c = header[i];
-				//char c1 = (char)(c/16 + (int)'0');
-				//char c2 = (char)(c%16 + (int)'0');
-				//data += new string(c1,1) + new string(c2,1);
 				data += cvt_Int2Nible(c);
-				dbg_text += $"{c:x} "; // -- debug text	
+				//dbg_text += $"{c:x02} "; // -- debug text	
 			}
  
 			int size = width;			
@@ -178,15 +186,30 @@ namespace OPosBitImgPrt
  
 			for (int i=0; i<size; i++) {
 				int c = bit_img[i];
-				//data += new string((char)((int)'0'+(c/16)),1) + new string((char)((int)'0'+(c%16)),1);
+				if (c==13) c=12;	// 13が入るとおかしくなる。
 				data += cvt_Int2Nible(c);
-				dbg_text += $"{c:x} "; // -- debug text	
+				//dbg_text += $"{c:x02} "; // -- debug text	
 			}
  
+			//string dbg2 = "";
+			//for (int i=0; i<data.Length; i+=2) {
+			//	var c1 = data[i];
+			//	var c2 = data[i+1];
+			//	int c = (c1-(int)'0')*16+(c2-(int)'0');
+			//	dbg2 += $"{c:x02} ";
+			//}
+			//System.Diagnostics.Debug.WriteLine(dbg2);
+
 			return data;
 		}
  
  
+		/// <summary> ビットイメージを印刷する
+		/// </summary>
+		/// <param name="mode">image-mode 0:8single,1:8double, 32:24single,33:24:double</param>
+		/// <param name="width"></param>
+		/// <param name="bit_img"></param>
+		/// <returns></returns>
 		int prt_bit_image(int mode, int width, byte[] bit_img)
 		{
 			var cur_cnvMode = PosPrt.BinaryConversion;
@@ -200,16 +223,49 @@ namespace OPosBitImgPrt
 			return stat;
 		}
  
+		/// <summary> ビットイメージ印字テスト（１）
+		/// 
+		/// </summary>
 		void bit_image_test() {
 			//--- bit-image
 			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "bit-image\r\n");
 			byte[] b_img = new byte[4096];
-			int width = 512;
+			int width = 80;
  
 			uint dot = 0;
-			// 8dot
+			// 8dot A1
 			for (int i=0; i<width; i++) {
-	 //			b_img[i] = i;
+	 			b_img[i] = (byte)(i & 0xff);
+			}
+			prt_bit_image(0, width, b_img);
+			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image\r\n");
+
+			// 8dotA-13
+			for (int n=12; n<=14; n++) {
+				int m=0;
+				for (int i=0; i<width; i++) {
+		 			b_img[i] = (byte)(n+m);
+					++m;
+					m %= 3;
+				}
+				prt_bit_image(0, width, b_img);
+				PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image ("+n+")\r\n");
+			}
+
+			// 8dotA-13
+			for (int n=12; n<=14; n++) {
+				int m=0;
+				for (int i=0; i<width; i++) {
+		 			b_img[i] = (byte)(n+m);
+					++m;
+					m %= 3;
+				}
+				prt_bit_image(0, 13, b_img);
+				PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image ("+n+")\r\n");
+			}
+
+			// 8dot B
+			for (int i=0; i<width; i++) {
 				b_img[i] = (byte)(dot & 0xff);
 				dot <<= 1;
 				dot |= 1;
@@ -242,48 +298,25 @@ namespace OPosBitImgPrt
 
 		// ---
 
-		//using System.Drawing;
-		//using System.Windows.Forms;
-
-		////描画先とするImageオブジェクトを作成する
-		//Bitmap canvas = new Bitmap(PictureBox1.Width, PictureBox1.Height);
-
-		////ImageオブジェクトのGraphicsオブジェクトを作成する
-		//Graphics g = Graphics.FromImage(canvas);
-
-		//string  drawString= @"智に働けば角が立つ。情に棹させば流される。
-		//意地を通せば窮屈だ。とかくに人の世は住みにくい。";
-
-		////Fontを作成
-		//Font fnt = new Font("ＭＳ ゴシック", 12);
-
-		////文字列を表示する範囲を指定する
-		//RectangleF rect = new RectangleF(10, 10, 100, 200);
-		////rectの四角を描く
-		//g.FillRectangle(Brushes.White, rect);
-		////文字を書く
-		//g.DrawString(drawString, fnt, Brushes.Black, rect);
-
-		////リソースを解放する
-		//fnt.Dispose();
-		//g.Dispose();
-
-		////PictureBox1に表示する
-		//PictureBox1.Image = canvas;
-
-
 		const int MAX_BITMAP_WIDTH = 512;
+		const int MAX_BITMAP_HEIGHT = 24;
 
+		/// <summary> 文字列をビットマップに変換する
+		/// </summary>
+		/// <param name="text"></param>
+		/// <param name="font_size"></param>
+		/// <param name="bmp_size"></param>
+		/// <returns></returns>
 		Bitmap cvt_text2bmp(string text, int font_size, ref SizeF bmp_size)
 		{
-			Bitmap bmp = new Bitmap(MAX_BITMAP_WIDTH, 24); // pictureBox1.Width, pictureBox1.Height);// ,PixelFormat.Format1bppIndexed);
+			Bitmap bmp = new Bitmap(MAX_BITMAP_WIDTH, MAX_BITMAP_HEIGHT); // pictureBox1.Width, pictureBox1.Height);// ,PixelFormat.Format1bppIndexed);
 			Graphics grp = Graphics.FromImage(bmp);
 			Font fnt = new Font("ＭＳ ゴシック", font_size, GraphicsUnit.Pixel);
 			
 			StringFormat sf = new StringFormat();							//StringFormatオブジェクトの作成
-			bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);	//幅の最大値MAX_BITMAP_WIDTHで、文字列を描画するときの大きさを計測する
-			bmp_size = new SizeF((int)Math.Ceiling(bmp_size.Width),(int)Math.Ceiling(bmp_size.Height));
-			RectangleF rct = new RectangleF(0, 0, (int)bmp_size.Width, 24);
+			bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);	//文字列を描画するときの大きさを計測する
+			bmp_size = new SizeF((int)Math.Ceiling(bmp_size.Width), MAX_BITMAP_HEIGHT);
+			RectangleF rct = new RectangleF(0, 0, (int)bmp_size.Width, MAX_BITMAP_HEIGHT);
 			
 			grp.DrawString(text, fnt, Brushes.Black, rct);
 			fnt.Dispose();
@@ -292,53 +325,136 @@ namespace OPosBitImgPrt
 			return bmp;
 		}
 
-		private void btn_bmpText_Click(object sender, EventArgs e)
+		/// <summary> ビットマップをプリンタ送信用データに変換する（24ドット倍密を想定）
+		/// </summary>
+		/// <param name="bmp"></param>
+		/// <param name="width"></param>
+		/// <returns></returns>
+		byte[] cvt_bmp2img(Bitmap bmp, int width)
 		{
 			SizeF bmp_size = new SizeF(0,0);
-			int font_size = (int)numericUpDown1.Value;
-			Bitmap bmp = cvt_text2bmp(textBox1.Text, font_size, ref bmp_size);
-
-			int backColorArgb = backColor.ToArgb();
-			pictureBox1.Image = bmp;
-
-			int width = (int)bmp_size.Width;
-			byte[] img = new byte[width*3];
-			int[,] dbg = new int[width,24];
-
 			Bitmap blank = cvt_text2bmp(" ", 16, ref bmp_size);
-			Color backColor = blank.GetPixel(0, 0);
+			int clear = blank.GetPixel(0, 0).ToArgb();
+
+			byte[] img = new byte[width*3];
 			int p = 0;
 			for (int x=0; x<width; x++) {
 				for (int y=0; y<24; y+=8) {
-					for (int i=0; i<8; i++) {
-						dbg[x, y+i] = bmp.GetPixel(x,y+i).ToArgb();
-					}
-					img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() != backColorArgb ? 0x80 : 0)
-									 | (bmp.GetPixel(x,y+1).ToArgb() != backColorArgb ? 0x40 : 0)
-									 | (bmp.GetPixel(x,y+2).ToArgb() != backColorArgb ? 0x20 : 0)
-									 | (bmp.GetPixel(x,y+3).ToArgb() != backColorArgb ? 0x10 : 0)
-									 | (bmp.GetPixel(x,y+4).ToArgb() != backColorArgb ? 0x08 : 0)
-									 | (bmp.GetPixel(x,y+5).ToArgb() != backColorArgb ? 0x04 : 0)
-									 | (bmp.GetPixel(x,y+6).ToArgb() != backColorArgb ? 0x02 : 0)
-									 | (bmp.GetPixel(x,y+7).ToArgb() != backColorArgb ? 0x01 : 0)
+					img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() != clear ? 0x80 : 0)
+									 | (bmp.GetPixel(x,y+1).ToArgb() != clear ? 0x40 : 0)
+									 | (bmp.GetPixel(x,y+2).ToArgb() != clear ? 0x20 : 0)
+									 | (bmp.GetPixel(x,y+3).ToArgb() != clear ? 0x10 : 0)
+									 | (bmp.GetPixel(x,y+4).ToArgb() != clear ? 0x08 : 0)
+									 | (bmp.GetPixel(x,y+5).ToArgb() != clear ? 0x04 : 0)
+									 | (bmp.GetPixel(x,y+6).ToArgb() != clear ? 0x02 : 0)
+									 | (bmp.GetPixel(x,y+7).ToArgb() != clear ? 0x01 : 0)
 									 );
 				}
 			}
-
-			prt_bit_image(33, width, img);
-		//	PosPrt.PrintNormal((int)PrinterStation.Receipt, "\n");
+			return img;
 		}
 
+		/// <summary>文字列をプリンタのビットイメージに変換する
+		/// </summary>
+		/// <param name="text"></param>
+		/// <param name="font_size"></param>
+		/// <param name="img"></param>
+		/// <returns></returns>
+		int cvt_text2img(string text, int font_size, ref byte[] img)
+		{
+			SizeF bmp_size = new SizeF(0,0);
+			Bitmap bmp = cvt_text2bmp(text, font_size, ref bmp_size);
+			int width = (int)bmp_size.Width;
+			img = cvt_bmp2img(bmp, width);
+			
+			return width;
+		}
+
+
+		/// <summary> テキストをビットイメージで印刷する（テスト２）
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void btn_bmpText_Click(object sender, EventArgs e)
+		{
+			int font_size = (int)numericUpDown1.Value;
+			
+			byte[] img = null;
+			string text = $"{font_size}:" + textBox1.Text;
+			int width = cvt_text2img(text, font_size , ref img);
+			prt_bit_image(33, width, img);
+
+
+			//SizeF bmp_size = new SizeF(0,0);
+			//int font_size = (int)numericUpDown1.Value;
+			//Bitmap bmp = cvt_text2bmp(textBox1.Text+$" {font_size}", font_size, ref bmp_size);
+			//pictureBox1.Image = bmp;
+			//int width = (int)Math.Ceiling(bmp_size.Width);
+			////byte[] img = new byte[width*3];
+			//byte[] img = cvt_bmp2img(bmp, width);
+			//int p = 0;
+			//for (int x=0; x<width; x++) {
+			//	for (int y=0; y<24; y+=8) {
+			//		img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() != clear ? 0x80 : 0)
+			//						 | (bmp.GetPixel(x,y+1).ToArgb() != clear ? 0x40 : 0)
+			//						 | (bmp.GetPixel(x,y+2).ToArgb() != clear ? 0x20 : 0)
+			//						 | (bmp.GetPixel(x,y+3).ToArgb() != clear ? 0x10 : 0)
+			//						 | (bmp.GetPixel(x,y+4).ToArgb() != clear ? 0x08 : 0)
+			//						 | (bmp.GetPixel(x,y+5).ToArgb() != clear ? 0x04 : 0)
+			//						 | (bmp.GetPixel(x,y+6).ToArgb() != clear ? 0x02 : 0)
+			//						 | (bmp.GetPixel(x,y+7).ToArgb() != clear ? 0x01 : 0)
+			//						 );
+			//	}
+			//}
+
+
+			//System.Diagnostics.Debug.WriteLine($"img[{img.Length}]");
+			//System.Diagnostics.Debug.WriteLine($"width={width}");
+			//System.Diagnostics.Debug.WriteLine($"length={width*3}");
+			//string dbg = "";
+			//for (int y=0; y<3; y++) {
+			//	int h = y;
+			//	byte bit = 0x80;
+			//	for (int i=0; i<8; i++) {
+			//		for (int x=0; x<width; x++) {
+			//			int w=x*3;
+			//			int c = img[w+h];
+			//			dbg += ((c & bit) !=0) ? '@' : '.';
+			//		}
+			//		dbg += '\n';
+			//		bit >>= 1;
+			//	}
+			//}
+			//System.Diagnostics.Debug.WriteLine(dbg);
+
+			//prt_bit_image(33, width, img);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void btn_prtCut_Click(object sender, EventArgs e)
 		{
-			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\x1dVA");
+			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\x1dVA\x01");
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void btn_prtFeed_Click(object sender, EventArgs e)
 		{
 			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\n");
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void btn_prtText_Click(object sender, EventArgs e)
 		{
 			PosPrt.PrintNormal((int)PrinterStation.Receipt, textBox2.Text);

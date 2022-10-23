@@ -59,7 +59,7 @@
 			// 
 			// btn_close
 			// 
-			this.btn_close.Location = new System.Drawing.Point(15, 266);
+			this.btn_close.Location = new System.Drawing.Point(12, 336);
 			this.btn_close.Name = "btn_close";
 			this.btn_close.Size = new System.Drawing.Size(121, 23);
 			this.btn_close.TabIndex = 1;
@@ -107,9 +107,9 @@
 			// pictureBox1
 			// 
 			this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pictureBox1.Location = new System.Drawing.Point(162, 228);
+			this.pictureBox1.Location = new System.Drawing.Point(25, 243);
 			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(226, 50);
+			this.pictureBox1.Size = new System.Drawing.Size(389, 77);
 			this.pictureBox1.TabIndex = 8;
 			this.pictureBox1.TabStop = false;
 			// 
@@ -203,7 +203,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(426, 301);
+			this.ClientSize = new System.Drawing.Size(426, 382);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.numericUpDown1);
 			this.Controls.Add(this.textBox2);
