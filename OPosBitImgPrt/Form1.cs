@@ -1,4 +1,14 @@
-﻿using Microsoft.PointOfService;
+﻿/**
+ * title: TM-T88シリーズにテキストをドットイメージで印刷させる。
+ * file: C:\Users\tenshi\source\repos\.テスト\OPosBitImgPrt\OPosBitImgPrt\Form1.cs
+ * date: 2022.10.23
+ * 
+ * auth: Tenshi
+ * 
+ */ 
+
+
+using Microsoft.PointOfService;
 using OposPOSPrinter_CCO;
 using System;
 using System.Drawing;
