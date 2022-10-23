@@ -12,6 +12,7 @@ using Microsoft.PointOfService;
 using OposPOSPrinter_CCO;
 using System;
 using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
 
 //namespace Microsoft.PointOfService
@@ -59,15 +60,20 @@ namespace OPosBitImgPrt
 {
 	public partial class Form1 : Form
 	{
+		/// <summary>
+		/// 
+		/// </summary>
 		public Form1()
 		{
 			InitializeComponent();
+			
 			string[] prt_name = new string[]{"TM-T88IIIM","TM-T88IVM","TM-T88VM","TM-T88VIM","TM-T88VIIM" };
-
 			cmb_prtName.Items.AddRange(prt_name);
 			cmb_prtName.SelectedIndex = 0;
+
 			textBox2.Text = "TM-T88 印字テスト";
 			textBox1.Text = "ビットイメージ印字テスト";
+
 			buttons_enable(false);
 		}
 
@@ -75,6 +81,10 @@ namespace OPosBitImgPrt
 //		public OposPOSPrinter_CCO.OPOSPOSPrinterClass PosPrt;
 		public OposPOSPrinter_CCO.OPOSPOSPrinter PosPrt;
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sw"></param>
 		void buttons_enable(bool sw) {
 			btn_hellow.Enabled = 
 			btn_dotImage.Enabled = 
@@ -85,7 +95,11 @@ namespace OPosBitImgPrt
 			btn_close.Enabled = sw;
 		}
 
-
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void button1_Click(object sender, EventArgs e)
 		{
 			var prt = cmb_prtName.SelectedItem.ToString();
@@ -119,6 +133,11 @@ namespace OPosBitImgPrt
 			}
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void btn_close_Click(object sender, EventArgs e)
 		{
 			if (PosPrt != null && PosPrt.OpenResult == (int)ErrorCode.Success) {
@@ -133,6 +152,11 @@ namespace OPosBitImgPrt
 			}
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void btn_hellow_Click(object sender, EventArgs e)
 		{
 			PosPrt.PrintNormal((int)PrinterStation.Receipt, "Hellow Pos Printer. \n");
@@ -144,7 +168,7 @@ namespace OPosBitImgPrt
 		}
 
 
-// ---
+		// ---
 		
 		/// <summary> プリンタ送信用文字変換 Nibble フォーマット
 		/// 文字コード13が入るとプリンタがバグるので12に入れ替える。
@@ -152,11 +176,15 @@ namespace OPosBitImgPrt
 		/// </summary>
 		/// <param name="c"></param>
 		/// <returns></returns>
-		string cvt_Int2Nible(int c)
+		char[] cvt_Int2Nible(int c)
 		{
 			if (c==13) c=12;	// 13が入るとおかしくなるので12に入れ替える。
-			return new string((char)((int)'0'+(c/16)),1)
-				 + new string((char)((int)'0'+(c%16)),1);
+			//return new string((char)((int)'0'+(c/16)),1)
+			//	 + new string((char)((int)'0'+(c%16)),1);
+			char[] res = new char[2];
+			res[0] = (char)((int)'0'+(c/16));
+			res[1] = (char)((int)'0'+(c%16));
+			return res;
 		}
 
 		/// <summary> ビットイメージをプリントするためのデータを変換
@@ -175,15 +203,14 @@ namespace OPosBitImgPrt
 			header[hp++] = (byte)(width%256);	// size-low
 			header[hp++] = (byte)(width/256);	// size-hight
  
-			string data= "";
-			//string dbg_text= "";
+			//string data= "";
+			//string dbg_text= "";System.Text.StringBuilder sb =
+
+            StringBuilder sb = new StringBuilder(16+width*2);
 
 			for (int i=0; i<hp; i++) {
-				data += cvt_Int2Nible(header[i]);
-
-				//int c = header[i];
-				//data += cvt_Int2Nible(c);
-				//dbg_text += $"{c:x02} "; // -- debug text	
+				//data += cvt_Int2Nible(header[i]);
+				sb.Append(cvt_Int2Nible(header[i]));
 			}
  
 			int size = width;			
@@ -192,23 +219,14 @@ namespace OPosBitImgPrt
 			}
  
 			for (int i=0; i<size; i++) {
-				data += cvt_Int2Nible(bit_img[i]);
-
-				//int c = bit_img[i];
-				//data += cvt_Int2Nible(c);
-				//dbg_text += $"{c:x02} "; // -- debug text	
+				//data += cvt_Int2Nible(bit_img[i]);
+				sb.Append(cvt_Int2Nible(bit_img[i]));
 			}
- 
-			//string dbg2 = "";
-			//for (int i=0; i<data.Length; i+=2) {
-			//	var c1 = data[i];
-			//	var c2 = data[i+1];
-			//	int c = (c1-(int)'0')*16+(c2-(int)'0');
-			//	dbg2 += $"{c:x02} ";
-			//}
-			//System.Diagnostics.Debug.WriteLine(dbg2);
 
-			return data;
+			//data = sb.ToString();
+			//return data;
+			
+			return sb.ToString();
 		}
  
  
@@ -323,56 +341,11 @@ namespace OPosBitImgPrt
 			byte[] img = null;
 			string text = $"{font_size}:" + textBox1.Text;
 			int width = cvt_text2img(text, font_size , ref img);
+
 			prt_bit_image(33, width, img);
-
-
-			//SizeF bmp_size = new SizeF(0,0);
-			//int font_size = (int)numericUpDown1.Value;
-			//Bitmap bmp = cvt_text2bmp(textBox1.Text+$" {font_size}", font_size, ref bmp_size);
-			//pictureBox1.Image = bmp;
-			//int width = (int)Math.Ceiling(bmp_size.Width);
-			////byte[] img = new byte[width*3];
-			//byte[] img = cvt_bmp2img(bmp, width);
-			//int p = 0;
-			//for (int x=0; x<width; x++) {
-			//	for (int y=0; y<24; y+=8) {
-			//		img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() != clear ? 0x80 : 0)
-			//						 | (bmp.GetPixel(x,y+1).ToArgb() != clear ? 0x40 : 0)
-			//						 | (bmp.GetPixel(x,y+2).ToArgb() != clear ? 0x20 : 0)
-			//						 | (bmp.GetPixel(x,y+3).ToArgb() != clear ? 0x10 : 0)
-			//						 | (bmp.GetPixel(x,y+4).ToArgb() != clear ? 0x08 : 0)
-			//						 | (bmp.GetPixel(x,y+5).ToArgb() != clear ? 0x04 : 0)
-			//						 | (bmp.GetPixel(x,y+6).ToArgb() != clear ? 0x02 : 0)
-			//						 | (bmp.GetPixel(x,y+7).ToArgb() != clear ? 0x01 : 0)
-			//						 );
-			//	}
-			//}
-
-
-			//System.Diagnostics.Debug.WriteLine($"img[{img.Length}]");
-			//System.Diagnostics.Debug.WriteLine($"width={width}");
-			//System.Diagnostics.Debug.WriteLine($"length={width*3}");
-			//string dbg = "";
-			//for (int y=0; y<3; y++) {
-			//	int h = y;
-			//	byte bit = 0x80;
-			//	for (int i=0; i<8; i++) {
-			//		for (int x=0; x<width; x++) {
-			//			int w=x*3;
-			//			int c = img[w+h];
-			//			dbg += ((c & bit) !=0) ? '@' : '.';
-			//		}
-			//		dbg += '\n';
-			//		bit >>= 1;
-			//	}
-			//}
-			//System.Diagnostics.Debug.WriteLine(dbg);
-
-			//prt_bit_image(33, width, img);
 		}
 
 		/// <summary> ビットイメージ印字テスト（１）
-		/// 
 		/// </summary>
 		void bit_image_test() {
 			//--- bit-image
