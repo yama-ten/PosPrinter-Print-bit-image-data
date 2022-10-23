@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Microsoft.PointOfService;
+﻿using Microsoft.PointOfService;
 using OposPOSPrinter_CCO;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 //namespace Microsoft.PointOfService
 //{
@@ -223,79 +215,6 @@ namespace OPosBitImgPrt
 			return stat;
 		}
  
-		/// <summary> ビットイメージ印字テスト（１）
-		/// 
-		/// </summary>
-		void bit_image_test() {
-			//--- bit-image
-			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "bit-image\r\n");
-			byte[] b_img = new byte[4096];
-			int width = 80;
- 
-			uint dot = 0;
-			// 8dot A1
-			for (int i=0; i<width; i++) {
-	 			b_img[i] = (byte)(i & 0xff);
-			}
-			prt_bit_image(0, width, b_img);
-			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image\r\n");
-
-			// 8dotA-13
-			for (int n=12; n<=14; n++) {
-				int m=0;
-				for (int i=0; i<width; i++) {
-		 			b_img[i] = (byte)(n+m);
-					++m;
-					m %= 3;
-				}
-				prt_bit_image(0, width, b_img);
-				PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image ("+n+")\r\n");
-			}
-
-			// 8dotA-13
-			for (int n=12; n<=14; n++) {
-				int m=0;
-				for (int i=0; i<width; i++) {
-		 			b_img[i] = (byte)(n+m);
-					++m;
-					m %= 3;
-				}
-				prt_bit_image(0, 13, b_img);
-				PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image ("+n+")\r\n");
-			}
-
-			// 8dot B
-			for (int i=0; i<width; i++) {
-				b_img[i] = (byte)(dot & 0xff);
-				dot <<= 1;
-				dot |= 1;
-				if (dot > 0x0ff) 
-					dot = 0;
-			}
-			prt_bit_image(0, width, b_img);
-			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image\r\n");
- 
-			prt_bit_image(1, width, b_img);
-			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot-W end-image\r\n");
- 
-			// 24dot
-			dot = 1;
-			for (int i=0; i<width*3; i+=3) {
-				b_img[i]   = (byte)((dot & 0xff0000) >> 16);
-				b_img[i+1] = (byte)((dot & 0x00ff00) >> 8);
-				b_img[i+2] = (byte)(dot & 0xff);
-				dot <<= 1;
-				dot |= 1;
-				if (dot > 0x0ffffff) 
-					dot = 1;
-			}
-			prt_bit_image(32, width, b_img);
-			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n24dot end-image\r\n");
- 
-			prt_bit_image(33, width, b_img);
-			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n24dot-W end-image\r\n");
-		}
-
 		// ---
 
 		const int MAX_BITMAP_WIDTH = 512;
@@ -307,22 +226,24 @@ namespace OPosBitImgPrt
 		/// <param name="font_size"></param>
 		/// <param name="bmp_size"></param>
 		/// <returns></returns>
-		Bitmap cvt_text2bmp(string text, int font_size, ref SizeF bmp_size)
+		int cvt_text2bmp(string text, int font_size, ref Bitmap bmp)
 		{
-			Bitmap bmp = new Bitmap(MAX_BITMAP_WIDTH, MAX_BITMAP_HEIGHT); // pictureBox1.Width, pictureBox1.Height);// ,PixelFormat.Format1bppIndexed);
+			bmp = new Bitmap(MAX_BITMAP_WIDTH, MAX_BITMAP_HEIGHT);
 			Graphics grp = Graphics.FromImage(bmp);
 			Font fnt = new Font("ＭＳ ゴシック", font_size, GraphicsUnit.Pixel);
 			
-			StringFormat sf = new StringFormat();							//StringFormatオブジェクトの作成
-			bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);	//文字列を描画するときの大きさを計測する
-			bmp_size = new SizeF((int)Math.Ceiling(bmp_size.Width), MAX_BITMAP_HEIGHT);
+			StringFormat sf = new StringFormat();							
+			SizeF bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);		//文字列を描画するときの大きさを計測する
+			bmp_size = new SizeF((int)Math.Ceiling(bmp_size.Width), MAX_BITMAP_HEIGHT); 
 			RectangleF rct = new RectangleF(0, 0, (int)bmp_size.Width, MAX_BITMAP_HEIGHT);
 			
 			grp.DrawString(text, fnt, Brushes.Black, rct);
 			fnt.Dispose();
 			grp.Dispose();
 
-			return bmp;
+			pictureBox1.Image = bmp;	// 生成結果を表示
+
+			return (int)bmp_size.Width;
 		}
 
 		/// <summary> ビットマップをプリンタ送信用データに変換する（24ドット倍密を想定）
@@ -332,22 +253,25 @@ namespace OPosBitImgPrt
 		/// <returns></returns>
 		byte[] cvt_bmp2img(Bitmap bmp, int width)
 		{
+			// ドットがないところの Color値
 			SizeF bmp_size = new SizeF(0,0);
-			Bitmap blank = cvt_text2bmp(" ", 16, ref bmp_size);
-			int clear = blank.GetPixel(0, 0).ToArgb();
-
+			Bitmap blank = null;
+			cvt_text2bmp(" ", 16, ref blank);
+			int bg_color = blank.GetPixel(0, 0).ToArgb();
+			
+			// ドットパターンからプリントデータを生成
 			byte[] img = new byte[width*3];
 			int p = 0;
 			for (int x=0; x<width; x++) {
 				for (int y=0; y<24; y+=8) {
-					img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() != clear ? 0x80 : 0)
-									 | (bmp.GetPixel(x,y+1).ToArgb() != clear ? 0x40 : 0)
-									 | (bmp.GetPixel(x,y+2).ToArgb() != clear ? 0x20 : 0)
-									 | (bmp.GetPixel(x,y+3).ToArgb() != clear ? 0x10 : 0)
-									 | (bmp.GetPixel(x,y+4).ToArgb() != clear ? 0x08 : 0)
-									 | (bmp.GetPixel(x,y+5).ToArgb() != clear ? 0x04 : 0)
-									 | (bmp.GetPixel(x,y+6).ToArgb() != clear ? 0x02 : 0)
-									 | (bmp.GetPixel(x,y+7).ToArgb() != clear ? 0x01 : 0)
+					img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() != bg_color ? 0x80 : 0)
+									 | (bmp.GetPixel(x,y+1).ToArgb() != bg_color ? 0x40 : 0)
+									 | (bmp.GetPixel(x,y+2).ToArgb() != bg_color ? 0x20 : 0)
+									 | (bmp.GetPixel(x,y+3).ToArgb() != bg_color ? 0x10 : 0)
+									 | (bmp.GetPixel(x,y+4).ToArgb() != bg_color ? 0x08 : 0)
+									 | (bmp.GetPixel(x,y+5).ToArgb() != bg_color ? 0x04 : 0)
+									 | (bmp.GetPixel(x,y+6).ToArgb() != bg_color ? 0x02 : 0)
+									 | (bmp.GetPixel(x,y+7).ToArgb() != bg_color ? 0x01 : 0)
 									 );
 				}
 			}
@@ -363,13 +287,14 @@ namespace OPosBitImgPrt
 		int cvt_text2img(string text, int font_size, ref byte[] img)
 		{
 			SizeF bmp_size = new SizeF(0,0);
-			Bitmap bmp = cvt_text2bmp(text, font_size, ref bmp_size);
-			int width = (int)bmp_size.Width;
+			Bitmap bmp = null;
+			int width = cvt_text2bmp(text, font_size, ref bmp);
 			img = cvt_bmp2img(bmp, width);
 			
 			return width;
 		}
-
+		
+		// ---
 
 		/// <summary> テキストをビットイメージで印刷する（テスト２）
 		/// </summary>
@@ -430,6 +355,65 @@ namespace OPosBitImgPrt
 			//prt_bit_image(33, width, img);
 		}
 
+		/// <summary> ビットイメージ印字テスト（１）
+		/// 
+		/// </summary>
+		void bit_image_test() {
+			//--- bit-image
+			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "bit-image\r\n");
+			byte[] b_img = new byte[4096];
+			int width = 80;
+ 
+			uint dot = 0;
+			// 8dot A1
+			for (int i=0; i<width; i++) {
+	 			b_img[i] = (byte)(i & 0xff);
+			}
+			prt_bit_image(0, width, b_img);
+			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image\r\n");
+
+			// 8dotA-13
+			for (int n=12; n<=14; n++) {
+				for (int i=0; i<width; i++) {
+		 			b_img[i] = (byte)n;
+				}
+				prt_bit_image(0, width, b_img);
+				PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image ("+n+")\r\n");
+			}
+
+			// 8dot B
+			for (int i=0; i<width; i++) {
+				b_img[i] = (byte)(dot & 0xff);
+				dot <<= 1;
+				dot |= 1;
+				if (dot > 0x0ff) 
+					dot = 0;
+			}
+			prt_bit_image(0, width, b_img);
+			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image\r\n");
+ 
+			prt_bit_image(1, width, b_img);
+			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot-W end-image\r\n");
+ 
+			// 24dot
+			dot = 1;
+			for (int i=0; i<width*3; i+=3) {
+				b_img[i]   = (byte)((dot & 0xff0000) >> 16);
+				b_img[i+1] = (byte)((dot & 0x00ff00) >> 8);
+				b_img[i+2] = (byte)(dot & 0xff);
+				dot <<= 1;
+				dot |= 1;
+				if (dot > 0x0ffffff) 
+					dot = 1;
+			}
+			prt_bit_image(32, width, b_img);
+			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n24dot end-image\r\n");
+ 
+			prt_bit_image(33, width, b_img);
+			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n24dot-W end-image\r\n");
+		}
+
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -447,7 +431,8 @@ namespace OPosBitImgPrt
 		/// <param name="e"></param>
 		private void btn_prtFeed_Click(object sender, EventArgs e)
 		{
-			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\n");
+			char n = (char)numericUpDown2.Value;
+			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\x1b"+"3"+new string(n,1) + "\n");// + "\x1b"+"2");
 		}
 
 		/// <summary>
