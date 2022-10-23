@@ -35,14 +35,21 @@ using OposPOSPrinter_CCO;
 
 //  public enum PrinterStation
 //  {
-//  	None = 0,		//     The current printer station is undefined.
-//  	Journal = 1,	//     The current printer station is Journal.
-//  	Receipt = 2,	//     The current printer station is Receipt.
-//  	Slip = 4,		//     The current printer station is Slip.
-//  	TwoReceiptJournal = 32771,	//     The current printer station combines Receipt and Journal.
-//  	TwoSlipJournal = 32773,		//     The current printer station combines Slip and Journal.
-//  	TwoSlipReceipt = 32774		//     The current printer station combines Receipt and Slip.
+//  	None = 0,		// The current printer station is undefined.
+//  	Journal = 1,	// The current printer station is Journal.
+//  	Receipt = 2,	// The current printer station is Receipt.
+//  	Slip = 4,		// The current printer station is Slip.
+//  	TwoReceiptJournal = 32771,	// The current printer station combines Receipt and Journal.
+//  	TwoSlipJournal = 32773,		// The current printer station combines Slip and Journal.
+//  	TwoSlipReceipt = 32774		// The current printer station combines Receipt and Slip.
 //  }
+//
+//	public enum BinaryConversion
+//	{
+//		None = 0,	// Data is placed one byte per character, with no conversion. This is the default.
+//		Nibble = 1,	// Each byte is converted into two characters. This option provides for the fastest conversion between binary and ASCII characters.
+//		Decimal = 2	// Each byte is converted into three characters. This option provides for the easiest conversion between binary and ASCII characters for Visual Basic and similar languages.
+//	}
 //}
 
 namespace OPosBitImgPrt
@@ -128,24 +135,32 @@ namespace OPosBitImgPrt
 
 
 // ---
+		
+		string cvt_Int2Nible(int c)
+		{
+			return new string((char)((int)'0'+(c/16)),1)
+				 + new string((char)((int)'0'+(c%16)),1);
+		}
+
 		string cvt_bit_image(int mode, int width, byte[] bit_img)
 		{
 			byte[] header = new byte[16];
 			int hp = 0;
 			header[hp++] = (byte)'\x1b';
 			header[hp++] = (byte)'\x2a';
-			header[hp++] = (byte)mode; // image-mode 0:8single,1:8double, 32:24single,33:24:double
-			header[hp++] = (byte)(width%256); // size-low
-			header[hp++] = (byte)(width/256); // size-hight
+			header[hp++] = (byte)mode;			// image-mode 0:8single,1:8double, 32:24single,33:24:double
+			header[hp++] = (byte)(width%256);	// size-low
+			header[hp++] = (byte)(width/256);	// size-hight
  
 			string data= "";
 			string dbg_text= "";
 
 			for (int i=0; i<hp; i++) {
 				int c = header[i];
-				char c1 = (char)(c/16 + (int)'0');
-				char c2 = (char)(c%16 + (int)'0');
-				data += new string(c1,1) + new string(c2,1);
+				//char c1 = (char)(c/16 + (int)'0');
+				//char c2 = (char)(c%16 + (int)'0');
+				//data += new string(c1,1) + new string(c2,1);
+				data += cvt_Int2Nible(c);
 				dbg_text += $"{c:x}"; // -- debug text	
 			}
  
@@ -156,7 +171,8 @@ namespace OPosBitImgPrt
  
 			for (int i=0; i<size; i++) {
 				int c = bit_img[i];
-				data += new string((char)((int)'0'+(c/16)),1) + new string((char)((int)'0'+(c%16)),1);
+				//data += new string((char)((int)'0'+(c/16)),1) + new string((char)((int)'0'+(c%16)),1);
+				data += cvt_Int2Nible(c);
 				dbg_text += $"{c:x}"; // -- debug text	
 			}
  

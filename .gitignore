@@ -1,0 +1,17 @@
+/.vs/OPosBitImgPrt/FileContentIndex/*.vsidx
+/.vs/OPosBitImgPrt/FileContentIndex/*.lock
+/.vs/OPosBitImgPrt/v16/*.suo
+/.vs/OPosBitImgPrt/v17/*.suo
+/OPosBitImgPrt/bin/Debug/*.dll
+/OPosBitImgPrt/bin/Debug/*.xml
+/OPosBitImgPrt/bin/Debug/*.exe
+/OPosBitImgPrt/bin/Debug/*.config
+/OPosBitImgPrt/bin/Debug/*.pdb
+/OPosBitImgPrt/obj/Debug/*.cs
+/OPosBitImgPrt/obj/Debug/*.cache
+/OPosBitImgPrt/obj/Debug/*.dll
+/OPosBitImgPrt/obj/Debug/*.resources
+/OPosBitImgPrt/obj/Debug/*.CopyComplete
+/OPosBitImgPrt/obj/Debug/*.txt
+/OPosBitImgPrt/obj/Debug/*.exe
+/OPosBitImgPrt/obj/Debug/*.pdb
