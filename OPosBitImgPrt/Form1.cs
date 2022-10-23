@@ -234,5 +234,49 @@ namespace OPosBitImgPrt
 		}
 
 		// ---
+		//		//using System.Drawing;
+		////using System.Windows.Forms;
+
+		////描画先とするImageオブジェクトを作成する
+		//Bitmap canvas = new Bitmap(PictureBox1.Width, PictureBox1.Height);
+
+		////ImageオブジェクトのGraphicsオブジェクトを作成する
+		//Graphics g = Graphics.FromImage(canvas);
+
+		//string  drawString= @"智に働けば角が立つ。情に棹させば流される。
+		//意地を通せば窮屈だ。とかくに人の世は住みにくい。";
+
+		////Fontを作成
+		//Font fnt = new Font("ＭＳ ゴシック", 12);
+
+		////文字列を表示する範囲を指定する
+		//RectangleF rect = new RectangleF(10, 10, 100, 200);
+		////rectの四角を描く
+		//g.FillRectangle(Brushes.White, rect);
+		////文字を書く
+		//g.DrawString(drawString, fnt, Brushes.Black, rect);
+
+		////リソースを解放する
+		//fnt.Dispose();
+		//g.Dispose();
+
+		////PictureBox1に表示する
+		//PictureBox1.Image = canvas;
+
+
+		private void btn_bmpText_Click(object sender, EventArgs e)
+		{
+			string text = textBox1.Text;
+			Bitmap bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+			Graphics grp = Graphics.FromImage(bmp);
+			Font fnt = new Font("ＭＳ ゴシック", 12);
+			RectangleF rct = new RectangleF(0, 0, 256, 24);
+
+			grp.DrawString(text, fnt, Brushes.Black, rct);
+			pictureBox1.Image = bmp;
+
+			fnt.Dispose();
+			grp.Dispose();
+		}
 	}
 }

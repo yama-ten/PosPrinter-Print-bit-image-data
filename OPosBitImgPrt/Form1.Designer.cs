@@ -34,6 +34,10 @@
 			this.btn_hellow = new System.Windows.Forms.Button();
 			this.txt_open_result = new System.Windows.Forms.TextBox();
 			this.btn_dotImage = new System.Windows.Forms.Button();
+			this.btn_bmpText = new System.Windows.Forms.Button();
+			this.textBox1 = new System.Windows.Forms.TextBox();
+			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btn_open
@@ -93,11 +97,39 @@
 			this.btn_dotImage.UseVisualStyleBackColor = true;
 			this.btn_dotImage.Click += new System.EventHandler(this.btn_dotImage_Click);
 			// 
+			// btn_bmpText
+			// 
+			this.btn_bmpText.Location = new System.Drawing.Point(15, 150);
+			this.btn_bmpText.Name = "btn_bmpText";
+			this.btn_bmpText.Size = new System.Drawing.Size(121, 23);
+			this.btn_bmpText.TabIndex = 6;
+			this.btn_bmpText.Text = "Print Bitmap Text";
+			this.btn_bmpText.UseVisualStyleBackColor = true;
+			this.btn_bmpText.Click += new System.EventHandler(this.btn_bmpText_Click);
+			// 
+			// textBox1
+			// 
+			this.textBox1.Location = new System.Drawing.Point(142, 152);
+			this.textBox1.Name = "textBox1";
+			this.textBox1.Size = new System.Drawing.Size(255, 19);
+			this.textBox1.TabIndex = 7;
+			// 
+			// pictureBox1
+			// 
+			this.pictureBox1.Location = new System.Drawing.Point(142, 177);
+			this.pictureBox1.Name = "pictureBox1";
+			this.pictureBox1.Size = new System.Drawing.Size(256, 24);
+			this.pictureBox1.TabIndex = 8;
+			this.pictureBox1.TabStop = false;
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(426, 251);
+			this.Controls.Add(this.pictureBox1);
+			this.Controls.Add(this.textBox1);
+			this.Controls.Add(this.btn_bmpText);
 			this.Controls.Add(this.btn_dotImage);
 			this.Controls.Add(this.txt_open_result);
 			this.Controls.Add(this.btn_hellow);
@@ -106,6 +138,7 @@
 			this.Controls.Add(this.btn_open);
 			this.Name = "Form1";
 			this.Text = "OposBitmapImagePrint";
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -119,6 +152,9 @@
 		private System.Windows.Forms.Button btn_hellow;
 		private System.Windows.Forms.TextBox txt_open_result;
 		private System.Windows.Forms.Button btn_dotImage;
+		private System.Windows.Forms.Button btn_bmpText;
+		private System.Windows.Forms.TextBox textBox1;
+		private System.Windows.Forms.PictureBox pictureBox1;
 	}
 }
 
