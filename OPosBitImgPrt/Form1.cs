@@ -63,7 +63,8 @@ namespace OPosBitImgPrt
 
 			cmb_prtName.Items.AddRange(prt_name);
 			cmb_prtName.SelectedIndex = 0;
-
+			textBox2.Text = "TM-T88 印字テスト";
+			textBox1.Text = "ビットイメージ印字テスト";
 			buttons_enable(false);
 		}
 
@@ -72,9 +73,13 @@ namespace OPosBitImgPrt
 		public OposPOSPrinter_CCO.OPOSPOSPrinter PosPrt;
 
 		void buttons_enable(bool sw) {
-			btn_close.Enabled =
+			btn_hellow.Enabled = 
 			btn_dotImage.Enabled = 
-			btn_hellow.Enabled = sw;
+			btn_bmpText.Enabled =
+			btn_prtCut.Enabled =
+			btn_prtFeed.Enabled =
+			btn_prtText.Enabled =
+			btn_close.Enabled = sw;
 		}
 
 
@@ -114,6 +119,8 @@ namespace OPosBitImgPrt
 		private void btn_close_Click(object sender, EventArgs e)
 		{
 			if (PosPrt != null && PosPrt.OpenResult == (int)ErrorCode.Success) {
+				btn_prtCut_Click(sender, e);
+
 				PosPrt.Close();
 
 				buttons_enable(false);
@@ -161,7 +168,7 @@ namespace OPosBitImgPrt
 				//char c2 = (char)(c%16 + (int)'0');
 				//data += new string(c1,1) + new string(c2,1);
 				data += cvt_Int2Nible(c);
-				dbg_text += $"{c:x}"; // -- debug text	
+				dbg_text += $"{c:x} "; // -- debug text	
 			}
  
 			int size = width;			
@@ -173,7 +180,7 @@ namespace OPosBitImgPrt
 				int c = bit_img[i];
 				//data += new string((char)((int)'0'+(c/16)),1) + new string((char)((int)'0'+(c%16)),1);
 				data += cvt_Int2Nible(c);
-				dbg_text += $"{c:x}"; // -- debug text	
+				dbg_text += $"{c:x} "; // -- debug text	
 			}
  
 			return data;
@@ -265,16 +272,17 @@ namespace OPosBitImgPrt
 		//PictureBox1.Image = canvas;
 
 
-		const int MAX_BITMAP_WIDTH = 256;
+		const int MAX_BITMAP_WIDTH = 512;
 
-		Bitmap cvt_text2bmp(string text, ref SizeF bmp_size)
+		Bitmap cvt_text2bmp(string text, int font_size, ref SizeF bmp_size)
 		{
 			Bitmap bmp = new Bitmap(MAX_BITMAP_WIDTH, 24); // pictureBox1.Width, pictureBox1.Height);// ,PixelFormat.Format1bppIndexed);
 			Graphics grp = Graphics.FromImage(bmp);
-			Font fnt = new Font("ＭＳ ゴシック", 12, GraphicsUnit.Pixel);
+			Font fnt = new Font("ＭＳ ゴシック", font_size, GraphicsUnit.Pixel);
 			
 			StringFormat sf = new StringFormat();							//StringFormatオブジェクトの作成
 			bmp_size = grp.MeasureString(text, fnt, MAX_BITMAP_WIDTH, sf);	//幅の最大値MAX_BITMAP_WIDTHで、文字列を描画するときの大きさを計測する
+			bmp_size = new SizeF((int)Math.Ceiling(bmp_size.Width),(int)Math.Ceiling(bmp_size.Height));
 			RectangleF rct = new RectangleF(0, 0, (int)bmp_size.Width, 24);
 			
 			grp.DrawString(text, fnt, Brushes.Black, rct);
@@ -287,27 +295,53 @@ namespace OPosBitImgPrt
 		private void btn_bmpText_Click(object sender, EventArgs e)
 		{
 			SizeF bmp_size = new SizeF(0,0);
-			Bitmap bmp = cvt_text2bmp(textBox1.Text, ref bmp_size);
+			int font_size = (int)numericUpDown1.Value;
+			Bitmap bmp = cvt_text2bmp(textBox1.Text, font_size, ref bmp_size);
+
+			int backColorArgb = backColor.ToArgb();
 			pictureBox1.Image = bmp;
 
 			int width = (int)bmp_size.Width;
 			byte[] img = new byte[width*3];
+			int[,] dbg = new int[width,24];
+
+			Bitmap blank = cvt_text2bmp(" ", 16, ref bmp_size);
+			Color backColor = blank.GetPixel(0, 0);
 			int p = 0;
 			for (int x=0; x<width; x++) {
 				for (int y=0; y<24; y+=8) {
-					img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() > 0 ? 0x80 : 0)
-									 | (bmp.GetPixel(x,y+1).ToArgb() > 0 ? 0x40 : 0)
-									 | (bmp.GetPixel(x,y+2).ToArgb() > 0 ? 0x20 : 0)
-									 | (bmp.GetPixel(x,y+3).ToArgb() > 0 ? 0x10 : 0)
-									 | (bmp.GetPixel(x,y+4).ToArgb() > 0 ? 0x08 : 0)
-									 | (bmp.GetPixel(x,y+5).ToArgb() > 0 ? 0x04 : 0)
-									 | (bmp.GetPixel(x,y+6).ToArgb() > 0 ? 0x02 : 0)
-									 | (bmp.GetPixel(x,y+7).ToArgb() > 0 ? 0x01 : 0)
+					for (int i=0; i<8; i++) {
+						dbg[x, y+i] = bmp.GetPixel(x,y+i).ToArgb();
+					}
+					img[p++] = (byte)( (bmp.GetPixel(x,y+0).ToArgb() != backColorArgb ? 0x80 : 0)
+									 | (bmp.GetPixel(x,y+1).ToArgb() != backColorArgb ? 0x40 : 0)
+									 | (bmp.GetPixel(x,y+2).ToArgb() != backColorArgb ? 0x20 : 0)
+									 | (bmp.GetPixel(x,y+3).ToArgb() != backColorArgb ? 0x10 : 0)
+									 | (bmp.GetPixel(x,y+4).ToArgb() != backColorArgb ? 0x08 : 0)
+									 | (bmp.GetPixel(x,y+5).ToArgb() != backColorArgb ? 0x04 : 0)
+									 | (bmp.GetPixel(x,y+6).ToArgb() != backColorArgb ? 0x02 : 0)
+									 | (bmp.GetPixel(x,y+7).ToArgb() != backColorArgb ? 0x01 : 0)
 									 );
 				}
 			}
 
-			prt_bit_image(32, width, img);
+			prt_bit_image(33, width, img);
+		//	PosPrt.PrintNormal((int)PrinterStation.Receipt, "\n");
+		}
+
+		private void btn_prtCut_Click(object sender, EventArgs e)
+		{
+			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\x1dVA");
+		}
+
+		private void btn_prtFeed_Click(object sender, EventArgs e)
+		{
+			PosPrt.PrintNormal((int)PrinterStation.Receipt, "\n");
+		}
+
+		private void btn_prtText_Click(object sender, EventArgs e)
+		{
+			PosPrt.PrintNormal((int)PrinterStation.Receipt, textBox2.Text);
 		}
 	}
 }

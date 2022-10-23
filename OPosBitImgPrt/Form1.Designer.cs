@@ -34,10 +34,17 @@
 			this.btn_hellow = new System.Windows.Forms.Button();
 			this.txt_open_result = new System.Windows.Forms.TextBox();
 			this.btn_dotImage = new System.Windows.Forms.Button();
+			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this.btn_prtCut = new System.Windows.Forms.Button();
+			this.btn_prtFeed = new System.Windows.Forms.Button();
 			this.btn_bmpText = new System.Windows.Forms.Button();
 			this.textBox1 = new System.Windows.Forms.TextBox();
-			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this.textBox2 = new System.Windows.Forms.TextBox();
+			this.btn_prtText = new System.Windows.Forms.Button();
+			this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+			this.label1 = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btn_open
@@ -52,7 +59,7 @@
 			// 
 			// btn_close
 			// 
-			this.btn_close.Location = new System.Drawing.Point(15, 216);
+			this.btn_close.Location = new System.Drawing.Point(15, 266);
 			this.btn_close.Name = "btn_close";
 			this.btn_close.Size = new System.Drawing.Size(121, 23);
 			this.btn_close.TabIndex = 1;
@@ -97,9 +104,38 @@
 			this.btn_dotImage.UseVisualStyleBackColor = true;
 			this.btn_dotImage.Click += new System.EventHandler(this.btn_dotImage_Click);
 			// 
+			// pictureBox1
+			// 
+			this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.pictureBox1.Location = new System.Drawing.Point(162, 228);
+			this.pictureBox1.Name = "pictureBox1";
+			this.pictureBox1.Size = new System.Drawing.Size(226, 50);
+			this.pictureBox1.TabIndex = 8;
+			this.pictureBox1.TabStop = false;
+			// 
+			// btn_prtCut
+			// 
+			this.btn_prtCut.Location = new System.Drawing.Point(162, 111);
+			this.btn_prtCut.Name = "btn_prtCut";
+			this.btn_prtCut.Size = new System.Drawing.Size(121, 23);
+			this.btn_prtCut.TabIndex = 9;
+			this.btn_prtCut.Text = "Print Cut";
+			this.btn_prtCut.UseVisualStyleBackColor = true;
+			this.btn_prtCut.Click += new System.EventHandler(this.btn_prtCut_Click);
+			// 
+			// btn_prtFeed
+			// 
+			this.btn_prtFeed.Location = new System.Drawing.Point(162, 82);
+			this.btn_prtFeed.Name = "btn_prtFeed";
+			this.btn_prtFeed.Size = new System.Drawing.Size(121, 23);
+			this.btn_prtFeed.TabIndex = 10;
+			this.btn_prtFeed.Text = "Print Feed";
+			this.btn_prtFeed.UseVisualStyleBackColor = true;
+			this.btn_prtFeed.Click += new System.EventHandler(this.btn_prtFeed_Click);
+			// 
 			// btn_bmpText
 			// 
-			this.btn_bmpText.Location = new System.Drawing.Point(15, 150);
+			this.btn_bmpText.Location = new System.Drawing.Point(15, 189);
 			this.btn_bmpText.Name = "btn_bmpText";
 			this.btn_bmpText.Size = new System.Drawing.Size(121, 23);
 			this.btn_bmpText.TabIndex = 6;
@@ -109,25 +145,71 @@
 			// 
 			// textBox1
 			// 
-			this.textBox1.Location = new System.Drawing.Point(142, 152);
+			this.textBox1.Location = new System.Drawing.Point(142, 191);
 			this.textBox1.Name = "textBox1";
 			this.textBox1.Size = new System.Drawing.Size(272, 19);
 			this.textBox1.TabIndex = 7;
 			// 
-			// pictureBox1
+			// textBox2
 			// 
-			this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pictureBox1.Location = new System.Drawing.Point(15, 177);
-			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(399, 36);
-			this.pictureBox1.TabIndex = 8;
-			this.pictureBox1.TabStop = false;
+			this.textBox2.Location = new System.Drawing.Point(139, 162);
+			this.textBox2.Name = "textBox2";
+			this.textBox2.Size = new System.Drawing.Size(272, 19);
+			this.textBox2.TabIndex = 12;
+			// 
+			// btn_prtText
+			// 
+			this.btn_prtText.Location = new System.Drawing.Point(12, 160);
+			this.btn_prtText.Name = "btn_prtText";
+			this.btn_prtText.Size = new System.Drawing.Size(121, 23);
+			this.btn_prtText.TabIndex = 11;
+			this.btn_prtText.Text = "Print Text";
+			this.btn_prtText.UseVisualStyleBackColor = true;
+			this.btn_prtText.Click += new System.EventHandler(this.btn_prtText_Click);
+			// 
+			// numericUpDown1
+			// 
+			this.numericUpDown1.Location = new System.Drawing.Point(88, 218);
+			this.numericUpDown1.Maximum = new decimal(new int[] {
+            40,
+            0,
+            0,
+            0});
+			this.numericUpDown1.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.numericUpDown1.Name = "numericUpDown1";
+			this.numericUpDown1.Size = new System.Drawing.Size(48, 19);
+			this.numericUpDown1.TabIndex = 13;
+			this.numericUpDown1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			this.numericUpDown1.Value = new decimal(new int[] {
+            16,
+            0,
+            0,
+            0});
+			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(23, 222);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(53, 12);
+			this.label1.TabIndex = 14;
+			this.label1.Text = "Font Size";
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(426, 251);
+			this.ClientSize = new System.Drawing.Size(426, 301);
+			this.Controls.Add(this.label1);
+			this.Controls.Add(this.numericUpDown1);
+			this.Controls.Add(this.textBox2);
+			this.Controls.Add(this.btn_prtText);
+			this.Controls.Add(this.btn_prtFeed);
+			this.Controls.Add(this.btn_prtCut);
 			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.btn_bmpText);
@@ -140,6 +222,7 @@
 			this.Name = "Form1";
 			this.Text = "OposBitmapImagePrint";
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -153,9 +236,15 @@
 		private System.Windows.Forms.Button btn_hellow;
 		private System.Windows.Forms.TextBox txt_open_result;
 		private System.Windows.Forms.Button btn_dotImage;
+		private System.Windows.Forms.PictureBox pictureBox1;
+		private System.Windows.Forms.Button btn_prtCut;
+		private System.Windows.Forms.Button btn_prtFeed;
 		private System.Windows.Forms.Button btn_bmpText;
 		private System.Windows.Forms.TextBox textBox1;
-		private System.Windows.Forms.PictureBox pictureBox1;
+		private System.Windows.Forms.TextBox textBox2;
+		private System.Windows.Forms.Button btn_prtText;
+		private System.Windows.Forms.NumericUpDown numericUpDown1;
+		private System.Windows.Forms.Label label1;
 	}
 }
 
