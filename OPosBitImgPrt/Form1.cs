@@ -332,6 +332,7 @@ namespace OPosBitImgPrt
 			
 			byte[] img = null;
 			string text = $"{font_size}:" + textBox1.Text;
+
 			int width = cvt_text2img(text, font_size , ref img);
 
 			prt_bit_image(33, width, img);
