@@ -61,6 +61,8 @@ namespace OPosBitImgPrt
 {
 	public partial class Form1 : Form
 	{
+		public printer PosPrt;
+
 		/// <summary> コンストラクタ
 		/// </summary>
 		public Form1()
@@ -79,7 +81,7 @@ namespace OPosBitImgPrt
 
 //		public OPOSPOSPrinter PosPrt;
 //		public OposPOSPrinter_CCO.OPOSPOSPrinterClass PosPrt;
-		public OposPOSPrinter_CCO.OPOSPOSPrinter PosPrt;
+//		public OposPOSPrinter_CCO.OPOSPOSPrinter PosPrt;
 
 		/// <summary> ボタンの ON/OFF
 		/// </summary>
@@ -102,27 +104,30 @@ namespace OPosBitImgPrt
 		{
 			var prt = cmb_prtName.SelectedItem.ToString();
 
-			PosPrt = new OPOSPOSPrinter();
-			//if (PosPrt.Open(prt) == Microsoft.PointOfService.ErrorCode.Success)
-			ErrorCode result;
+			//PosPrt = new OPOSPOSPrinter();
+			PosPrt = new printer(prt);
+			ErrorCode result = PosPrt.open(prt);
 			
-			result = (ErrorCode)PosPrt.Open(prt);
-			if (result == ErrorCode.Success) {
-				result = (ErrorCode)PosPrt.ClaimDevice(1000);
-				if (result == ErrorCode.Success) {
-					PosPrt.DeviceEnabled = true;
+			//result = (ErrorCode)PosPrt.Open(prt);
+			//if (result == ErrorCode.Success) {
+			//	result = (ErrorCode)PosPrt.ClaimDevice(1000);
+			//	if (result == ErrorCode.Success) {
+			//		PosPrt.DeviceEnabled = true;
 
-					if (PosPrt.DeviceEnabled) {
-						buttons_enable(true);
-					}
+			//		if (PosPrt.DeviceEnabled) {
+			//			buttons_enable(true);
+			//		}
 
-				} else {
-					PosPrt.Close();
-				}
-			}
+			//	} else {
+			//		PosPrt.Close();
+			//	}
+			//}
 			txt_open_result.Text = $"{(int)result}:{result}";
 
-			if (result != ErrorCode.Success) {
+			if (result == ErrorCode.Success) {
+				buttons_enable(true);
+			}
+			else {
 				btn_open.Enabled = 
 				cmb_prtName.Enabled = true;
 
@@ -140,7 +145,8 @@ namespace OPosBitImgPrt
 			if (PosPrt != null && PosPrt.OpenResult == (int)ErrorCode.Success) {
 				btn_prtCut_Click(sender, e);
 
-				PosPrt.Close();
+				//PosPrt.Close();
+				PosPrt.cloose();
 
 				buttons_enable(false);
 
@@ -165,7 +171,7 @@ namespace OPosBitImgPrt
 
 
 		// ---
-		
+#if OLD_CODE		
 		/// <summary> プリンタ送信用文字変換 Nibble フォーマット
 		/// </summary>
 		/// <param name="c">変換する文字</param>
@@ -319,7 +325,7 @@ namespace OPosBitImgPrt
 			
 			return width;
 		}
-		
+#endif		
 		// ---
 
 		/// <summary> テキストをビットイメージで印刷する（テスト２）
@@ -330,17 +336,19 @@ namespace OPosBitImgPrt
 		{
 			int font_size = (int)numericUpDown1.Value;
 			
-			byte[] img = null;
+			//byte[] img = null;
 			string text = $"{font_size}:" + textBox1.Text;
 
-			int width = cvt_text2img(text, font_size , ref img);
-
-			prt_bit_image(33, width, img);
+			//int width = cvt_text2img(text, font_size , ref img);
+			//prt_bit_image(33, width, img);
+		
+			PosPrt.print_bitImageText(text, font_size);
 		}
 
 		/// <summary> ビットイメージ印字テスト（１）
 		/// </summary>
-		void bit_image_test() {
+		void bit_image_test()
+		{
 			//--- bit-image
 			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "bit-image\r\n");
 			byte[] b_img = new byte[4096];
@@ -351,7 +359,7 @@ namespace OPosBitImgPrt
 			for (int i=0; i<width; i++) {
 	 			b_img[i] = (byte)(i & 0xff);
 			}
-			prt_bit_image(0, width, b_img);
+			PosPrt.prt_bit_image(0, width, b_img);
 			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image\r\n");
 
 			// 8dotA-13
@@ -359,7 +367,7 @@ namespace OPosBitImgPrt
 				for (int i=0; i<width; i++) {
 		 			b_img[i] = (byte)n;
 				}
-				prt_bit_image(0, width, b_img);
+				PosPrt.prt_bit_image(0, width, b_img);
 				PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image ("+n+")\r\n");
 			}
 
@@ -371,10 +379,10 @@ namespace OPosBitImgPrt
 				if (dot > 0x0ff) 
 					dot = 0;
 			}
-			prt_bit_image(0, width, b_img);
+			PosPrt.prt_bit_image(0, width, b_img);
 			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot end-image\r\n");
  
-			prt_bit_image(1, width, b_img);
+			PosPrt.prt_bit_image(1, width, b_img);
 			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n8dot-W end-image\r\n");
  
 			// 24dot
@@ -388,10 +396,10 @@ namespace OPosBitImgPrt
 				if (dot > 0x0ffffff) 
 					dot = 1;
 			}
-			prt_bit_image(32, width, b_img);
+			PosPrt.prt_bit_image(32, width, b_img);
 			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n24dot end-image\r\n");
  
-			prt_bit_image(33, width, b_img);
+			PosPrt.prt_bit_image(33, width, b_img);
 			PosPrt.PrintNormal( (int)PrinterStation.Receipt, "\r\n24dot-W end-image\r\n");
 		}
 

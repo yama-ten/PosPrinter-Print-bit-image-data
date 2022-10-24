@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.PointOfService;
 using OposPOSPrinter_CCO;
-using System;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 //namespace Microsoft.PointOfService
@@ -54,7 +52,7 @@ using System.Windows.Forms;
 
 namespace OPosBitImgPrt
 {
-	class printer
+	public class printer
 	{
 		const int MAX_BITMAP_WIDTH    = 512;
 		const int MAX_BITMAP_HEIGHT   = 24;
@@ -86,6 +84,12 @@ namespace OPosBitImgPrt
 			posPrt = prt;
 		}
 
+		public int PrintNormal(int station, string text)
+		{
+			return posPrt.PrintNormal(station, text);
+		}
+
+		public int OpenResult { get { return posPrt.OpenResult; } }
 
 
 		public ErrorCode open(string log_name =null)
@@ -111,15 +115,13 @@ namespace OPosBitImgPrt
 			return (ErrorCode)posPrt.Close();
 		}
 
-
-
 		public ErrorCode print_bitImageText(string text, int font_size)
 		{
 			byte[] prt_img = null;
 			int width = cvt_text2img(text, font_size , ref prt_img);
-			ErrorCode stat = prt_bit_image(BIT_IMAGE_24_DOUBLE, width, prt_img);
+			int stat = prt_bit_image(BIT_IMAGE_24_DOUBLE, width, prt_img);
 
-			return stat;
+			return (ErrorCode)stat;
 		}
 
  
@@ -129,9 +131,9 @@ namespace OPosBitImgPrt
 		/// <param name="width">ビットマップの長さ</param>
 		/// <param name="bit_img">印刷するビットマップ</param>
 		/// <returns></returns>
-		int prt_bit_image(int mode, int width, byte[] bit_img)
+		public int prt_bit_image(int mode, int width, byte[] bit_img)
 		{
-			var cur_conv = PosPrt.BinaryConversion;
+			var cur_conv = posPrt.BinaryConversion;
 			posPrt.BinaryConversion = (int)BinaryConversion.Nibble;
 
 			string data = cvt_bit_image(mode, width, bit_img);
@@ -183,8 +185,8 @@ namespace OPosBitImgPrt
 				sb.Append(cvt_Int2Nible(header[i]));
  
 	   		int size = width;
-			if (mode==BIT_IMAGE_24_SINGLE || mode=BIT_IMAGE_24_DOUBLE)
-    			size *= 3
+			if (mode==BIT_IMAGE_24_SINGLE || mode==BIT_IMAGE_24_DOUBLE)
+    			size *= 3;
 	
 			for (int i=0; i<size; i++)
 				sb.Append(cvt_Int2Nible(bit_img[i]));
