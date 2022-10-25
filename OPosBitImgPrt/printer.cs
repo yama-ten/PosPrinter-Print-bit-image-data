@@ -1,13 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿/**
+ * title: TM-T88シリーズにテキストをドットイメージで印刷させる。
+ * file: C:\Users\tenshi\source\repos\.テスト\OPosBitImgPrt\printer.cs
+ * version: 1.0
+ * date: 2022.10.24
+ * 
+ * auth: Tenshi
+ * 
+ */
 
 using Microsoft.PointOfService;
 using OposPOSPrinter_CCO;
+using System;
 using System.Drawing;
-using System.Windows.Forms;
+using System.Text;
 
 //namespace Microsoft.PointOfService
 //{
@@ -112,6 +117,13 @@ namespace OPosBitImgPrt
 
 		public ErrorCode cloose()
 		{
+			if (posPrt.DeviceEnabled)
+				posPrt.DeviceEnabled = false;
+			
+			if (posPrt.Claimed)
+				posPrt.ReleaseDevice();
+
+			//if (posPrt.OpenResult == 0) { }// Microsoft.PointOfService
 			return (ErrorCode)posPrt.Close();
 		}
 
